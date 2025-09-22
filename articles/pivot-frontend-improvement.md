@@ -79,7 +79,7 @@ Template や Component など、何かしらの意味でディレクトリが分
 
 まずは、最近流行りの Package by Feature を導入し、その中で Container/Presentational パターンを採用しました。具体的には以下のようなディレクトリ（例）を追加しました。
 
-```
+```shell
 features/
 └── account
     ├── feature-a.container.tsx
@@ -96,7 +96,7 @@ features/
 
 一方で、機能横断で共通で使う見た目やロジックは当然あるため、そこは従来どおり Package by Layer 的に残し、適宜棲み分けています。全体としては以下のような構成（抜粋）です。
 
-```
+```shell
 ├── features
 ├── components
 ├── hooks
