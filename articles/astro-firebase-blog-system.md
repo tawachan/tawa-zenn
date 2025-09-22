@@ -1,6 +1,6 @@
 ---
 title: "Astro + Firebase HostingでつくるブログシステムとCI/CDパイプライン"
-emoji: "🚀"
+emoji: "🔧"
 type: "tech"
 topics:
   - "astro"
