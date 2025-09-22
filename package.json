@@ -1,0 +1,12 @@
+{
+  "name": "tawa-zenn",
+  "packageManager": "yarn@4.10.2",
+  "scripts": {
+    "new:article": "zenn new:article",
+    "new:book": "zenn new:book", 
+    "preview": "zenn preview"
+  },
+  "devDependencies": {
+    "zenn-cli": "^0.2.3"
+  }
+}
