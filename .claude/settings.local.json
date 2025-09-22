@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/tawachan/Documents/Codes/blog-tawa-me-astro/src/content/entry/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

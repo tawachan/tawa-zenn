@@ -5,8 +5,7 @@ type: "tech"
 topics:
   - "astro"
   - "gatsby"
-  - "blog"
-  - "migration"
+  - "react"
 published: true
 published_at: "2024-03-14 00:00"
 ---
