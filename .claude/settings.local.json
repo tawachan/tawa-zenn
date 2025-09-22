@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//Users/tawachan/Documents/Codes/blog-tawa-me-astro/src/content/entry/**)"
+      "Read(//Users/tawachan/Documents/Codes/blog-tawa-me-astro/src/content/entry/**)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
