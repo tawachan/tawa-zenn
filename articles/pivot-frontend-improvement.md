@@ -5,6 +5,7 @@ type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["react", "nextjs", "frontend", "tailwindcss", "radixui"]
 published: false
 published_at: "2024-12-24 10:08"
+publication_name: "pivotmedia"
 ---
 
 はじめまして、2024年8月にPIVOTにジョインしました、@tawachanです。ジョインしてからそろそろ半年弱経とうとしていますが、簡単な自己紹介とその間に主に取り組んだ、PIVOTでのWebのフロントエンドの改善について書いていこうと思います。
