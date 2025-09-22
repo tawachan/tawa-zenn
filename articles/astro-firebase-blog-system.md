@@ -46,18 +46,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: 22
+          cache: 'yarn'
+      - name: Cache .cache directory
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: ${{ runner.os }}-.cache
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Format check
         run: yarn format:ci
       - name: Type check
         run: yarn astro check
-      - name: Test
-        run: yarn test:run
 ```
 
 コード品質チェックには[Biome](https://biomejs.dev/)を使用している。ESLintやPrettierより高速で、単一ツールでリント・フォーマットが完結する。
@@ -70,24 +76,34 @@ mainブランチへのpush時に自動で本番環境にデプロイされる：
 name: Deploy to Firebase Hosting
 on:
   push:
-    branches: [main]
-
+    branches:
+      - main
+  workflow_dispatch:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
-      - name: Install and Build
-        run: |
-          yarn install
-          yarn build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+          node-version: 22
+          cache: 'yarn'
+      - name: Cache .cache directory
+        uses: actions/cache@v4
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BLOG_TAWA_ME }}'
+          path: .cache
+          key: ${{ runner.os }}-.cache
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build Astro site
+        run: yarn build
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_BLOG_TAWA_ME }}"
           channelId: live
           projectId: blog-tawa-me
 ```
