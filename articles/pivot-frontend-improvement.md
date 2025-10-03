@@ -3,7 +3,7 @@ title: "【入社エントリ】機能開発を止めずにWebフロントエン
 emoji: "🚀"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["react", "nextjs", "frontend", "tailwindcss", "radixui"]
-published: false
+published: true
 published_at: "2024-12-24 10:08"
 publication_name: "pivotmedia"
 ---
