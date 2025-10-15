@@ -1,5 +1,5 @@
 ---
-title: "NotionからGitHub Projects/Issueへ移行した理由と実践"
+title: "NotionからGitHub Projectsへ移行した理由と実践"
 emoji: "📋"
 type: "tech"
 topics:
@@ -14,7 +14,7 @@ publication_name: "pivotmedia"
 
 こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
 
-この記事では、PIVOTのプロダクトチームがNotionからGitHub Projects/Issueへタスク管理ツールを移行した経緯と、具体的な実装方法について紹介します。
+この記事では、PIVOTのプロダクトチームがNotionからGitHub Projectsへタスク管理ツールを移行した経緯と、具体的な実装方法について紹介します。
 
 ## 背景 - AIファーストチームへの変革
 
@@ -32,7 +32,7 @@ Ubie社の[Devinの活用事例](https://zenn.dev/ubie_dev/articles/devin-for-te
 
 その一環として、私たちは：
 1. スプリントベースからカンバン方式へ移行
-2. タスク管理ツールをNotionからGitHub Projects/Issueへ移行
+2. タスク管理ツールをNotionからGitHub Projectsへ移行
 
 この記事では、**2番目のツール移行**について詳しく解説します。
 
@@ -90,11 +90,11 @@ AIエージェント（Claude Code/Codex CLIなど）から操作しようとす
 
 `gh` コマンドのようなシンプルな操作性とは程遠い状況でした。
 
-## GitHub Projects/Issueを選んだ理由
+## GitHub Projectsを選んだ理由
 
 ### 1. AI親和性 - `gh`コマンドでシュッと操作
 
-GitHub Projects/Issueの最大の強みは、**`gh` CLIでの操作性**です：
+GitHub Projectsの最大の強みは、**`gh` CLIでの操作性**です：
 
 ```bash
 # Issue作成
@@ -113,7 +113,7 @@ GitHub Copilot自身も**Agent Mode**をリリースし、公式MCPサポート�
 
 ### 2. 開発ワークフローとの統合
 
-GitHub Projects/Issueなら：
+GitHub Projectsなら：
 
 - **PR ↔ Issue 自動リンク**: `Closes #123`で自動連携
 - **コードレビューとタスクが同じ場所**
@@ -131,7 +131,7 @@ GitHub Projects/Issueなら：
 
 Notionは多機能ですが、**小規模チームには機能が多すぎる**側面もありました。
 
-GitHub Projects/Issueは：
+GitHub Projectsは：
 
 - **必要十分な機能**: タスク管理に特化
 - **学習コストが低い**: チーム全員がすぐに使える
@@ -399,7 +399,7 @@ AI時代におけるツール選定では、**「AIが操作しやすいか」�
 - 構造化されたAPI
 - ドキュメント化のしやすさ
 
-Notionは多機能で素晴らしいツールですが、**小規模開発チームのAIファーストな運用**においては、GitHub Projects/Issueの方がフィットしました。
+Notionは多機能で素晴らしいツールですが、**小規模開発チームのAIファーストな運用**においては、GitHub Projectsの方がフィットしました。
 
 ### シンプルさが新しい価値
 
@@ -414,11 +414,11 @@ Notionは多機能で素晴らしいツールですが、**小規模開発チー
 - **AIと統合しやすいか**
 - **開発フローに溶け込むか**
 
-私たちのチームでは、GitHub Projects/Issueがこれらの条件を満たしていました。
+私たちのチームでは、GitHub Projectsがこれらの条件を満たしていました。
 
 ### 前の記事との連携
 
-この記事では、NotionからGitHub Projects/Issueへの**具体的なツール移行**について紹介しました。
+この記事では、NotionからGitHub Projectsへの**具体的なツール移行**について紹介しました。
 
 **プロセスの変更**（スプリントベースからカンバンへ）については、前回の記事「[AI時代のチーム運営 - スプリントベースからカンバンへの移行](リンクを挿入)」をご覧ください。
 
