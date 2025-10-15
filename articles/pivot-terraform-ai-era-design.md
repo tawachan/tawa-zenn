@@ -1,5 +1,5 @@
 ---
-title: "小規模チームがゼロからTerraform構成を設計し直した話 - AI時代の運用を見据えて"
+title: "小規模チームがゼロからTerraform構成を設計した話 - AI時代の運用を見据えて"
 emoji: "🏗️"
 type: "tech"
 topics:
