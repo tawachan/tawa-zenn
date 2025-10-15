@@ -8,6 +8,7 @@ topics:
   - "cicd"
   - "gcp"
   - "iac"
+  - "zennfes2025infra"
 published: false
 publication_name: "pivotmedia"
 ---
