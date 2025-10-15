@@ -20,7 +20,7 @@ publication_name: "pivotmedia"
 
 PIVOTでは、Terraformのstateをリソース種別ごとに分割して管理しています：
 
-```
+```text
 platform/google-cloud/
 ├── pivot-stg/
 │   ├── cloud-run/        # stateファイル: stg/cloud-run
@@ -213,9 +213,9 @@ stgとprodで異なるサービスアカウントを使い分けます：
         run: |
           stack="${{ matrix.stack }}"
           if [[ "$stack" == *"pivot-prod/"* ]]; then
-            echo "sa=terraform-plan-sa@prod-example.iam.gserviceaccount.com" >> "$GITHUB_OUTPUT"
+            echo "sa=[prod-service-account-email]" >> "$GITHUB_OUTPUT"
           else
-            echo "sa=terraform-plan-sa@stg-example.iam.gserviceaccount.com" >> "$GITHUB_OUTPUT"
+            echo "sa=[stg-service-account-email]" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Resolve plan WIF provider
@@ -224,9 +224,9 @@ stgとprodで異なるサービスアカウントを使い分けます：
         run: |
           stack="${{ matrix.stack }}"
           if [[ "$stack" == *"pivot-prod/"* ]]; then
-            echo "wif=projects/123456789/locations/global/workloadIdentityPools/github-pool/providers/github-provider" >> "$GITHUB_OUTPUT"
+            echo "wif=projects/[prod-project-number]/locations/global/workloadIdentityPools/[pool-name]/providers/[provider-name]" >> "$GITHUB_OUTPUT"
           else
-            echo "wif=projects/987654321/locations/global/workloadIdentityPools/github-pool/providers/github-provider" >> "$GITHUB_OUTPUT"
+            echo "wif=projects/[stg-project-number]/locations/global/workloadIdentityPools/[pool-name]/providers/[provider-name]" >> "$GITHUB_OUTPUT"
           fi
 ```
 
