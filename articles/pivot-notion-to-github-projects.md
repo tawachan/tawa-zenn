@@ -196,14 +196,14 @@ projects: ["PIVOT-media/1"]  # デフォルトでプロジェクト追加
 
 ### プロダクトチームタスクボード (Project #1)
 
-- **ID**: `PVT_kwDOB01Zus4A5tAH`
+- **ID**: `PVT_kwXXXXXXXXXXXXXXX`（実際のIDはマスク）
 - **ステータス**: Inbox/Todo/In Progress/In Review/Done/QA/Next Release
 
 ### 重要なID・識別子
 
-- **プロジェクトID**: `PVT_kwDOB01Zus4A5tAH`
-- **Status Field ID**: `PVTSSF_lADOB01Zus4A5tAHzgudNEs`
-- **Task Type Field ID**: `PVTSSF_lADOB01Zus4A5tAHzg1ZsTM`
+- **プロジェクトID**: `PVT_kwXXXXXXXXXXXXXXX`
+- **Status Field ID**: `PVTSSF_XXXXXXXXXXXXXXXXX`
+- **Task Type Field ID**: `PVTSSF_XXXXXXXXXXXXXXXXX`
 
 ### よく使うコマンドテンプレート
 
@@ -215,9 +215,9 @@ gh issue create --repo PIVOT-media/pivot-project-management \
 
 # ステータス変更
 gh project item-edit --id [ITEM_ID] \
-  --project-id PVT_kwDOB01Zus4A5tAH \
-  --field-id PVTSSF_lADOB01Zus4A5tAHzgudNEs \
-  --single-select-option-id f75ad846  # Todo
+  --project-id PVT_kwXXXXXXXXXXXXXXX \
+  --field-id PVTSSF_XXXXXXXXXXXXXXXXX \
+  --single-select-option-id XXXXXXXX  # Todo
 ```
 
 AIが参照しやすい形で情報を整理しています。
@@ -231,12 +231,12 @@ AIが参照しやすい形で情報を整理しています。
 
 | GitHubユーザー名 | 本名 | ニックネーム・あだ名 |
 |----------------|------|-------------------|
-| @kazyam | 山﨑 一人 | kazyam, さきさん |
-| @tawachan | 大多和 祐介 | tawachan |
-| @indiamela | 楠瀬 大志 | indiamela, インディさん |
+| @member1 | メンバー A | member1, Aさん |
+| @member2 | メンバー B | member2 |
+| @member3 | メンバー C | member3, Cさん |
 ```
 
-これにより、AIに「インディさんにアサインして」と指示すると、`team-members.md`を参照して適切に`@indiamela`にアサインできます。
+これにより、AIに「Aさんにアサインして」と指示すると、`team-members.md`を参照して適切に`@member1`にアサインできます。
 
 ## 実際の使い方 - AIを活用したタスク管理
 
@@ -279,7 +279,7 @@ Claude CodeやCodex CLIを使うと、**自然言語でタスク管理**がで�
 
 [Slackメッセージをコピペ]
 
-AI: Issue #156を作成しました。Task TypeをWeb、ステータスをTodo、@tawachanにアサインしました。
+AI: Issue #156を作成しました。Task TypeをWeb、ステータスをTodo、担当者にアサインしました。
 ```
 
 #### 議論の文字起こしからタスク作成
@@ -290,17 +290,17 @@ AI: Issue #156を作成しました。Task TypeをWeb、ステータスをTodo�
 [議事録テキスト]
 
 AI: 以下の3つのIssueを作成しました：
-- Issue #157: ユーザープロフィール画面UI実装 (@tawachan)
-- Issue #158: プロフィールAPI実装 (@adachic)
-- Issue #159: プロフィール画面のテスト設計 (@KeisukeQA)
+- Issue #157: ユーザープロフィール画面UI実装 (@member1)
+- Issue #158: プロフィールAPI実装 (@member2)
+- Issue #159: プロフィール画面のテスト設計 (@member3)
 ```
 
 #### ニックネームでのアサイン
 
 ```text
-ユーザー: 「このタスクをさきさんにアサインして」
+ユーザー: 「このタスクをAさんにアサインして」
 
-AI: team-members.mdを参照して、@kazyamにアサインしました。
+AI: team-members.mdを参照して、@member1にアサインしました。
 ```
 
 このように、**AIがAGENTS.mdとteam-members.mdを参照して適切に操作**してくれます。
