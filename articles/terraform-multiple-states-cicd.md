@@ -5,9 +5,7 @@ type: "tech"
 topics:
   - "terraform"
   - "githubactions"
-  - "cicd"
   - "gcp"
-  - "iac"
   - "zennfes2025infra"
 published: false
 publication_name: "pivotmedia"

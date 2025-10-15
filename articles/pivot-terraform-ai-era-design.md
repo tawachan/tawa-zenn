@@ -5,8 +5,6 @@ type: "tech"
 topics:
   - "terraform"
   - "gcp"
-  - "iac"
-  - "ai"
   - "devops"
   - "zennfes2025ai"
   - "zennfes2025infra"
