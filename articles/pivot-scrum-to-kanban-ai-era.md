@@ -12,7 +12,7 @@ published: false
 publication_name: "pivotmedia"
 ---
 
-こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
+こんにちは。PIVOTでソフトウェアエンジニア、スクラムマスターを務めている[@tawachan](https://x.com/tawachan39)です。
 
 この記事では、PIVOTのプロダクトチームがスプリントベースの開発からカンバン方式へ移行した経緯と、その背景にある「AIファーストチーム」という考え方について紹介します。
 
