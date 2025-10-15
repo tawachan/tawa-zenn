@@ -1,5 +1,5 @@
 ---
-title: "複数のTerraform StateをGitHub Actionsで効率的に管理する"
+title: "複数のtfstateのCI/CD実装 - tfactionを使わず自前で作った理由と方法"
 emoji: "⚙️"
 type: "tech"
 topics:
