@@ -12,7 +12,7 @@ published: false
 publication_name: "pivotmedia"
 ---
 
-こんにちは。PIVOTでソフトウェアエンジニア、スクラムマスターを務めている[@tawachan](https://x.com/tawachan39)です。
+こんにちは。PIVOTでソフトウェアエンジニア、スクラムマスターを務めている（た）[@tawachan](https://x.com/tawachan39)です。
 
 この記事では、PIVOTのプロダクトチームがアジャイル開発の中でスクラム寄りの運用からカンバン寄りの運用へ変えた経緯と、その背景にある「AIファーストチーム」という考え方について紹介します。
 
