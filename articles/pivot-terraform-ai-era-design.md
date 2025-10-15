@@ -8,6 +8,8 @@ topics:
   - "iac"
   - "ai"
   - "devops"
+  - "zennfes2025ai"
+  - "zennfes2025infra"
 published: false
 publication_name: "pivotmedia"
 ---
