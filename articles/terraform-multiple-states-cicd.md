@@ -221,7 +221,7 @@ GitHub Actionsの[matrix strategy](https://docs.github.com/en/actions/using-jobs
 
 実際の実行例：
 
-![Matrix strategyによる並列実行](/images/terraform-multiple-stacks-parallel.png)
+![Matrix strategyによる並列実行](/images/terraform-matrix-execution.png)
 
 detectジョブで対象stackを検出後、planとapplyがそれぞれmatrixで並列実行されています。この例では2つのstackが同時に処理されています。
 
