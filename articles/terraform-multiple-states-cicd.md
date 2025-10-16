@@ -221,7 +221,7 @@ GitHub Actionsの[matrix strategy](https://docs.github.com/en/actions/using-jobs
 
 実際の実行例：
 
-![Matrix strategyによる並列実行](/images/terraform-matrix-execution.png)
+![Matrix strategyによる並列実行](/images/terraform-multiple-stacks-parallel.png)
 
 detectジョブで対象stackを検出後、planとapplyがそれぞれmatrixで並列実行されています。この例では2つのstackが同時に処理されています。
 
@@ -355,6 +355,12 @@ stackのパスに`pivot-prod/`が含まれているかで環境を判定し、�
 - 既存コメントがあれば更新、なければ新規作成
 - `<details>`タグでfull planを折りたたみ表示
 - ANSI escape sequenceを除去して見やすく
+
+実際のPRコメント例：
+
+![PRコメントでのTerraform Plan/Apply結果](/images/terraform-plan-apply-pr-comment.png)
+
+Terraform plan結果がPRコメントに自動投稿され、変更内容が可視化されます。mainブランチへのマージで自動applyが実行され、完了すると元のPRコメントに結果が追記されます。
 
 ### 3. Apply jobの実装
 
