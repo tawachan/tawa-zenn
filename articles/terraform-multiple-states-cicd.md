@@ -13,7 +13,31 @@ publication_name: "pivotmedia"
 
 こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
 
-[前回の記事](リンクを挿入)では、PIVOTのTerraform構成設計について紹介しました。この記事では、その構成を実現するためのCI/CD、特に**複数のTerraform Stateを効率的に管理するGitHub Actionsの仕組み**について詳しく解説します。
+[前回の記事](リンクを挿入)では、PIVOTのTerraform構成設計について紹介しました。モノレポ × リソース種別ベースの構成により、AI時代のインフラ運用を見据えた設計を実現しました。
+
+構成設計に加えて、GitOpsフロー（PR→plan、merge→apply）を構築することで、レビュープロセスを経た安全なインフラ変更を実現しています。
+
+## GitOpsフローの必要性
+
+GitOpsは今や基本的な要件ですが、改めて確認しておきます。ローカルでTerraform applyする運用では、以下の問題がありました：
+
+- **変更履歴の追跡**: いつ誰が何を変更したのか記録が残らない
+- **レビュープロセスの欠如**: チェックなしで本番環境に変更が反映されてしまう
+- **ロールバックの困難**: 問題が起きた際、以前の状態に戻すのが難しい
+- **監査性の欠如**: コンプライアンス要件を満たせない
+
+GitOpsフロー（PR→plan、merge→apply）を構築することで、これらの課題を解決し、**必ずレビューを経た変更のみが適用される**という基本を押さえる必要がありました。
+
+## GitOps実装の選択肢
+
+Terraform管理の自動化には、意外と多くのツールや選択肢があります：
+
+- **[tfaction](https://github.com/suzuki-shunsuke/tfaction)**: Terraform管理に特化したGitHub Actionsライブラリ
+- **[Atlantis](https://www.runatlantis.io/)**: Terraform用のPull Requestオートメーションサーバー
+- **[Terragrunt](https://terragrunt.gruntwork.io/)**: Terraformのラッパーツール、DRYな構成管理
+- **自前実装**: GitHub Actionsで独自のワークフローを構築
+
+それぞれに長所短所があり、チーム規模や要件によって最適解は変わります。我々は最終的に**自前実装**を選択しました。この記事では、その理由と、**複数のTerraform Stateを効率的に管理する自前GitHub Actionsワークフローの実装**について詳しく解説します。
 
 ## 前提: 複数StateでのTerraform管理
 
