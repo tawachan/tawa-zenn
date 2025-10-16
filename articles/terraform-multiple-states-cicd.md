@@ -362,6 +362,12 @@ Workload Identity Federation[^wif]により、サービスアカウントキー�
 - `<details>`タグでfull planを折りたたみ表示
 - ANSI escape sequenceを除去して見やすく
 
+複数のstackを同時に変更した場合、それぞれのstackに対してPRコメントが投稿されます：
+
+![複数stackのPlan結果](/images/terraform-multiple-stacks-parallel.png)
+
+この例では、2つのstackに対してそれぞれplan結果がコメントされ、変更内容を並べて確認できます。
+
 ### 3. Apply jobの実装
 
 mainブランチへのマージ時に、applyを実行します。
