@@ -13,7 +13,31 @@ publication_name: "pivotmedia"
 
 こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
 
-[前回の記事](リンクを挿入)では、PIVOTのTerraform構成設計について紹介しました。この記事では、その構成を実現するためのCI/CD、特に**複数のTerraform Stateを効率的に管理するGitHub Actionsの仕組み**について詳しく解説します。
+[前回の記事](https://zenn.dev/pivotmedia/articles/pivot-terraform-ai-era-design)では、PIVOTのTerraform構成設計について紹介しました。モノレポ × リソース種別ベースの構成により、AI時代のインフラ運用を見据えた設計を実現しました。
+
+構成設計に加えて、GitOpsフロー（PR→plan、merge→apply）を構築することで、レビュープロセスを経た安全なインフラ変更を実現しています。
+
+## GitOpsフローの必要性
+
+GitOpsは今や基本的な要件ですが、改めて確認しておきます。ローカルでTerraform applyする運用では、以下の問題がありました：
+
+- **変更履歴の追跡**: いつ誰が何を変更したのか記録が残らない
+- **レビュープロセスの欠如**: チェックなしで本番環境に変更が反映されてしまう
+- **ロールバックの困難**: 問題が起きた際、以前の状態に戻すのが難しい
+- **監査性の欠如**: コンプライアンス要件を満たせない
+
+GitOpsフロー（PR→plan、merge→apply）を構築することで、これらの課題を解決し、**必ずレビューを経た変更のみが適用される**という基本を押さえる必要がありました。
+
+## GitOps実装の選択肢
+
+Terraform管理の自動化には、意外と多くのツールや選択肢があります：
+
+- **[tfaction](https://github.com/suzuki-shunsuke/tfaction)**: Terraform管理に特化したGitHub Actionsライブラリ
+- **[Atlantis](https://www.runatlantis.io/)**: Terraform用のPull Requestオートメーションサーバー
+- **[Terragrunt](https://terragrunt.gruntwork.io/)**: Terraformのラッパーツール、DRYな構成管理
+- **自前実装**: GitHub Actionsで独自のワークフローを構築
+
+それぞれに長所短所があり、チーム規模や要件によって最適解は変わります。我々は最終的に**自前実装**を選択しました。この記事では、その理由と、**複数のTerraform Stateを効率的に管理する自前GitHub Actionsワークフローの実装**について詳しく解説します。
 
 ## 前提: 複数StateでのTerraform管理
 
@@ -56,7 +80,7 @@ Terraform管理の自動化には[tfaction](https://github.com/suzuki-shunsuke/t
 
 もちろん、tfactionは素晴らしいツールであり、大規模な組織や複雑な要件には適しています。ただ、小規模チームでAI支援を前提とする場合、シンプルな自前実装の方が機動力が高いと判断しました[^tfaction-challenges]。
 
-[^tfaction-challenges]: tfactionの導入時のハマりポイントについては、[こちらの記事](https://zenn.dev/bm_sms/articles/d09886634c9bab)も参考になります。我々も同様の温度感で検討し、最終的に自前実装を選択しました。
+[^tfaction-challenges]: tfactionの導入時のハマりポイントについては、[tfactionを導入しようと3日試行錯誤して結局導入しなかった話](https://zenn.dev/bm_sms/articles/d09886634c9bab)も参考になります。我々も同様の温度感で検討し、最終的に自前実装を選択しました。
 
 ## 実装の全体像
 
@@ -115,7 +139,9 @@ jobs:
 
 #### paths-filterの活用
 
-[dorny/paths-filter](https://github.com/dorny/paths-filter)を使うことで、変更されたパスを検出できます。各stackに対応するディレクトリを定義し、変更があればフラグが立ちます。
+dorny/paths-filter[^paths-filter]を使うことで、変更されたパスを検出できます。各stackに対応するディレクトリを定義し、変更があればフラグが立ちます。
+
+[^paths-filter]: [dorny/paths-filter](https://github.com/dorny/paths-filter) - GitHub Actionsで変更されたファイルパスを検出するアクション
 
 #### Stackリストのビルド
 
@@ -189,7 +215,9 @@ jobs:
 
 #### Matrix strategyによる並列実行
 
-GitHub Actionsの[matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)を使うことで、複数のstackに対して並列にjobを実行できます。
+GitHub ActionsのMatrix strategy[^matrix]を使うことで、複数のstackに対して並列にjobを実行できます。
+
+[^matrix]: [GitHub Actions: Matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs) - 複数の構成でジョブを並列実行する機能
 
 - `fromJson()`で、detectジョブで作成したJSON配列をmatrixに展開
 - `fail-fast: false`で、1つのstackが失敗しても他のstackの実行を継続
@@ -242,7 +270,11 @@ stackのパスに`pivot-prod/`が含まれているかで環境を判定し、�
           service_account: ${{ steps.sa_plan.outputs.sa }}
 ```
 
-サービスアカウントキー不要で、GitHub ActionsからGoogle Cloudに安全に認証できます。
+Workload Identity Federation[^wif]により、サービスアカウントキー不要で、GitHub ActionsからGoogle Cloudに安全に認証できます[^sa-permissions]。
+
+[^wif]: [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) - サービスアカウントキーを使わずに外部IDプロバイダーから認証する仕組み
+
+[^sa-permissions]: セキュリティ対策として、Google Cloud側でWorkload Identity Poolの属性条件を設定し、apply用サービスアカウント（編集権限）へのFederationはmainブランチからの実行時のみ許可しています。それ以外のブランチからはplan用サービスアカウント（読み取り専用権限）へのFederationのみが可能です。これにより、PRからの誤ったapply実行を防ぎます。
 
 #### Terraform planの実行
 
@@ -332,6 +364,12 @@ stackのパスに`pivot-prod/`が含まれているかで環境を判定し、�
 - `<details>`タグでfull planを折りたたみ表示
 - ANSI escape sequenceを除去して見やすく
 
+複数のstackを同時に変更した場合、それぞれのstackに対してPRコメントが投稿されます：
+
+![複数stackのPlan結果](/images/terraform-multiple-stacks-parallel.png)
+
+この例では、2つのstackに対してそれぞれplan結果がコメントされ、変更内容を並べて確認できます。
+
 ### 3. Apply jobの実装
 
 mainブランチへのマージ時に、applyを実行します。
@@ -407,6 +445,12 @@ apply結果を元のPRコメントに追記するため、マージ元のPR番�
 
 plan時に投稿したコメントを見つけ、apply結果を追記します。これにより、plan結果とapply結果が同じコメント内に並び、変更の意図と実際の適用結果を一箇所で確認できます。
 
+実際のPRコメント例：
+
+![PRコメントでのTerraform Plan/Apply結果](/images/terraform-plan-apply-pr-comment.png)
+
+Terraform plan結果がPRコメントに自動投稿され、mainブランチへのマージで自動applyが実行された後、元のPRコメントにapply結果が追記されています。
+
 ## 実現できたこと
 
 この仕組みにより、以下を実現しました：
@@ -428,6 +472,7 @@ plan時に投稿したコメントを見つけ、apply結果を追記します�
 - planとapplyで異なるサービスアカウントを使用
 - Workload Identity Federationによるキーレス認証
 - 環境（stg/prod）ごとに分離されたIdentity
+- Google Cloud側でブランチ条件によるFederation制御[^sa-permissions]を実装し、apply用サービスアカウントへはmainブランチからのみアクセス可能
 
 ### 5. 変更履歴とレビュープロセス
 
@@ -457,20 +502,13 @@ plan時に投稿したコメントを見つけ、apply結果を追記します�
 
 複数のTerraform Stateを管理するCI/CDは、一見複雑に見えますが、以下の要素を組み合わせることで実現できます：
 
-- **dorny/paths-filter**による変更検知
-- **Matrix strategy**による並列実行
-- **Workload Identity Federation**による安全な認証
-- **peter-evans/create-or-update-comment**によるPRコメント管理
+- dorny/paths-filter[^paths-filter]による変更検知
+- Matrix strategy[^matrix]による並列実行
+- Workload Identity Federation[^wif]による安全な認証
+- peter-evans/create-or-update-commentによるPRコメント管理
 
 そして、AI時代においては、**ブラックボックスなライブラリよりも、明示的なワークフロー記述の方が、理解・改善・拡張が容易**という新しい判断軸が生まれています。
 
 tfactionのような優れたツールも存在しますが、小規模チームでAI支援を前提とする場合、シンプルな自前実装が機動力を高めることがあります。チームの状況に応じて、最適な技術選定を行うことが重要です。
 
 この記事が、同じような課題に取り組むチームの参考になれば幸いです。
-
-## 参考資料
-
-- [dorny/paths-filter](https://github.com/dorny/paths-filter)
-- [GitHub Actions: Matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
-- [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
-- [tfaction導入時の課題](https://zenn.dev/bm_sms/articles/d09886634c9bab)
