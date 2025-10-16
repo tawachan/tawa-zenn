@@ -274,7 +274,7 @@ Workload Identity Federation[^wif]により、サービスアカウントキー�
 
 [^wif]: [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) - サービスアカウントキーを使わずに外部IDプロバイダーから認証する仕組み
 
-[^sa-permissions]: セキュリティ対策として、Google Cloud側でWorkload Identity Poolの属性条件を設定し、apply用サービスアカウント（編集権限）へのFederationはmainブランチからの実行時のみ許可しています。具体的には、サービスアカウントのIAMバインディングで`member = "principal://iam.googleapis.com/.../subject/repo:OWNER/REPO:ref:refs/heads/main"`のようにブランチを指定してFederationを制限しています。それ以外のブランチからはplan用サービスアカウント（読み取り専用権限）へのFederationのみが可能です。これにより、PRからの誤ったapply実行を防ぎます。
+[^sa-permissions]: セキュリティ対策として、Google Cloud側でWorkload Identity Poolの属性条件を設定し、apply用サービスアカウント（編集権限）へのFederationはmainブランチからの実行時のみ許可しています。それ以外のブランチからはplan用サービスアカウント（読み取り専用権限）へのFederationのみが可能です。これにより、PRからの誤ったapply実行を防ぎます。
 
 #### Terraform planの実行
 
