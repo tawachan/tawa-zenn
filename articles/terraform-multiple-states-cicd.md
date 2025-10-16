@@ -362,12 +362,6 @@ Workload Identity Federation[^wif]により、サービスアカウントキー�
 - `<details>`タグでfull planを折りたたみ表示
 - ANSI escape sequenceを除去して見やすく
 
-実際のPRコメント例：
-
-![PRコメントでのTerraform Plan/Apply結果](/images/terraform-plan-apply-pr-comment.png)
-
-Terraform plan結果がPRコメントに自動投稿され、変更内容が可視化されます。mainブランチへのマージで自動applyが実行され、完了すると元のPRコメントに結果が追記されます。
-
 ### 3. Apply jobの実装
 
 mainブランチへのマージ時に、applyを実行します。
@@ -442,6 +436,12 @@ apply結果を元のPRコメントに追記するため、マージ元のPR番�
 ```
 
 plan時に投稿したコメントを見つけ、apply結果を追記します。これにより、plan結果とapply結果が同じコメント内に並び、変更の意図と実際の適用結果を一箇所で確認できます。
+
+実際のPRコメント例：
+
+![PRコメントでのTerraform Plan/Apply結果](/images/terraform-plan-apply-pr-comment.png)
+
+Terraform plan結果がPRコメントに自動投稿され、mainブランチへのマージで自動applyが実行された後、元のPRコメントにapply結果が追記されています。
 
 ## 実現できたこと
 
