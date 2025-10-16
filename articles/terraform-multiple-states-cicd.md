@@ -13,7 +13,7 @@ publication_name: "pivotmedia"
 
 こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
 
-[前回の記事](リンクを挿入)では、PIVOTのTerraform構成設計について紹介しました。モノレポ × リソース種別ベースの構成により、AI時代のインフラ運用を見据えた設計を実現しました。
+[前回の記事](https://zenn.dev/pivotmedia/articles/pivot-terraform-ai-era-design)では、PIVOTのTerraform構成設計について紹介しました。モノレポ × リソース種別ベースの構成により、AI時代のインフラ運用を見据えた設計を実現しました。
 
 構成設計に加えて、GitOpsフロー（PR→plan、merge→apply）を構築することで、レビュープロセスを経た安全なインフラ変更を実現しています。
 
