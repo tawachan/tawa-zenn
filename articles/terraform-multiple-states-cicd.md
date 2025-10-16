@@ -80,7 +80,7 @@ Terraform管理の自動化には[tfaction](https://github.com/suzuki-shunsuke/t
 
 もちろん、tfactionは素晴らしいツールであり、大規模な組織や複雑な要件には適しています。ただ、小規模チームでAI支援を前提とする場合、シンプルな自前実装の方が機動力が高いと判断しました[^tfaction-challenges]。
 
-[^tfaction-challenges]: tfactionの導入時のハマりポイントについては、[こちらの記事](https://zenn.dev/bm_sms/articles/d09886634c9bab)も参考になります。我々も同様の温度感で検討し、最終的に自前実装を選択しました。
+[^tfaction-challenges]: tfactionの導入時のハマりポイントについては、[tfactionを導入しようと3日試行錯誤して結局導入しなかった話](https://zenn.dev/bm_sms/articles/d09886634c9bab)も参考になります。我々も同様の温度感で検討し、最終的に自前実装を選択しました。
 
 ## 実装の全体像
 
@@ -139,7 +139,9 @@ jobs:
 
 #### paths-filterの活用
 
-[dorny/paths-filter](https://github.com/dorny/paths-filter)を使うことで、変更されたパスを検出できます。各stackに対応するディレクトリを定義し、変更があればフラグが立ちます。
+dorny/paths-filter[^paths-filter]を使うことで、変更されたパスを検出できます。各stackに対応するディレクトリを定義し、変更があればフラグが立ちます。
+
+[^paths-filter]: [dorny/paths-filter](https://github.com/dorny/paths-filter) - GitHub Actionsで変更されたファイルパスを検出するアクション
 
 #### Stackリストのビルド
 
@@ -213,7 +215,9 @@ jobs:
 
 #### Matrix strategyによる並列実行
 
-GitHub Actionsの[matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)を使うことで、複数のstackに対して並列にjobを実行できます。
+GitHub ActionsのMatrix strategy[^matrix]を使うことで、複数のstackに対して並列にjobを実行できます。
+
+[^matrix]: [GitHub Actions: Matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs) - 複数の構成でジョブを並列実行する機能
 
 - `fromJson()`で、detectジョブで作成したJSON配列をmatrixに展開
 - `fail-fast: false`で、1つのstackが失敗しても他のstackの実行を継続
@@ -266,7 +270,9 @@ stackのパスに`pivot-prod/`が含まれているかで環境を判定し、�
           service_account: ${{ steps.sa_plan.outputs.sa }}
 ```
 
-サービスアカウントキー不要で、GitHub ActionsからGoogle Cloudに安全に認証できます。
+Workload Identity Federation[^wif]により、サービスアカウントキー不要で、GitHub ActionsからGoogle Cloudに安全に認証できます。
+
+[^wif]: [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) - サービスアカウントキーを使わずに外部IDプロバイダーから認証する仕組み
 
 #### Terraform planの実行
 
@@ -487,20 +493,13 @@ plan時に投稿したコメントを見つけ、apply結果を追記します�
 
 複数のTerraform Stateを管理するCI/CDは、一見複雑に見えますが、以下の要素を組み合わせることで実現できます：
 
-- **dorny/paths-filter**による変更検知
-- **Matrix strategy**による並列実行
-- **Workload Identity Federation**による安全な認証
-- **peter-evans/create-or-update-comment**によるPRコメント管理
+- dorny/paths-filter[^paths-filter]による変更検知
+- Matrix strategy[^matrix]による並列実行
+- Workload Identity Federation[^wif]による安全な認証
+- peter-evans/create-or-update-commentによるPRコメント管理
 
 そして、AI時代においては、**ブラックボックスなライブラリよりも、明示的なワークフロー記述の方が、理解・改善・拡張が容易**という新しい判断軸が生まれています。
 
 tfactionのような優れたツールも存在しますが、小規模チームでAI支援を前提とする場合、シンプルな自前実装が機動力を高めることがあります。チームの状況に応じて、最適な技術選定を行うことが重要です。
 
 この記事が、同じような課題に取り組むチームの参考になれば幸いです。
-
-## 参考資料
-
-- [dorny/paths-filter](https://github.com/dorny/paths-filter)
-- [GitHub Actions: Matrix strategy](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs)
-- [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation)
-- [tfaction導入時の課題](https://zenn.dev/bm_sms/articles/d09886634c9bab)
