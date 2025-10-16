@@ -8,7 +8,7 @@ topics:
   - "devops"
   - "zennfes2025ai"
   - "zennfes2025infra"
-published: false
+published: true
 publication_name: "pivotmedia"
 ---
 
