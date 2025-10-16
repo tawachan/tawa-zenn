@@ -270,9 +270,11 @@ stackのパスに`pivot-prod/`が含まれているかで環境を判定し、�
           service_account: ${{ steps.sa_plan.outputs.sa }}
 ```
 
-Workload Identity Federation[^wif]により、サービスアカウントキー不要で、GitHub ActionsからGoogle Cloudに安全に認証できます。
+Workload Identity Federation[^wif]により、サービスアカウントキー不要で、GitHub ActionsからGoogle Cloudに安全に認証できます[^sa-permissions]。
 
 [^wif]: [Workload Identity Federation](https://cloud.google.com/iam/docs/workload-identity-federation) - サービスアカウントキーを使わずに外部IDプロバイダーから認証する仕組み
+
+[^sa-permissions]: セキュリティ対策として、Google Cloud側でWorkload Identity Poolの属性条件を設定し、mainブランチからの実行時のみapply用サービスアカウント（編集権限）へのアクセスを許可し、それ以外のブランチからはplan用サービスアカウント（読み取り専用権限）のみアクセスできるよう制限しています。これにより、PRからの誤ったapply実行を防ぎます。
 
 #### Terraform planの実行
 
@@ -470,6 +472,7 @@ Terraform plan結果がPRコメントに自動投稿され、mainブランチへ
 - planとapplyで異なるサービスアカウントを使用
 - Workload Identity Federationによるキーレス認証
 - 環境（stg/prod）ごとに分離されたIdentity
+- Google Cloud側でブランチ条件による権限制御[^sa-permissions]を実装し、mainブランチ以外からのapply実行を防止
 
 ### 5. 変更履歴とレビュープロセス
 
