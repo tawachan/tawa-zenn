@@ -128,69 +128,9 @@ AIツールは関連するコードが近くにあることで、より適切な
 
 この時、**参考にできるコードが近くにあること**が重要になります。モノレポかつリソース種別ベースの構成は、この要件を満たす理想的な形です。
 
-## GitOpsフローの実現
+そして、GitOpsフロー（PR→plan、merge→apply）を構築することで、Terraformの書き方を知らないメンバーでも、AIに自然言語で指示してTerraformコードを生成し、PRを作成してレビューを受けることで、安全にインフラ変更を提案できるようになりました[^gitops]。
 
-### なぜGitOpsフローが必要だったか
-
-最初はローカルでTerraform applyしていました。しかし、それでは以下の問題がありました：
-
-- インフラ変更の履歴が残らない
-- レビューなしで変更できてしまう
-- 誰がいつ何を変更したのかわからない
-
-**必ずPRでApproveを貰わないと変更できない**という統制を実現するため、GitOpsフローの構築を決めました。
-
-### 基本的な仕組み
-
-**GitHub Actions + Workload Identity Federation**でCI/CDを構築しています：
-
-- **PR時**: 変更されたTerraformコードに対して自動でplanを実行し、結果をPRコメントに投稿
-- **マージ時**: mainブランチへのマージで自動apply
-- **認証**: Workload Identity Federationにより、サービスアカウントキー不要で安全に認証
-- **権限分離**: planとapplyで異なるサービスアカウントを使用
-
-### 複数のtfstateへの対応
-
-tfstateはリソース種別ごとに分割し、GCS bucketで管理しています：
-
-```hcl
-# platform/pivot-prod/cloud-run/backend.tf
-terraform {
-  backend "gcs" {
-    bucket = "pivot-terraform-state"
-    prefix = "prod/cloud-run"
-  }
-}
-```
-
-分割する理由:
-
-- **stateの肥大化を避ける**: 1つのstateに全リソースを入れると管理が煩雑になる
-- **影響範囲を限定**: 誤った変更があっても、該当するリソース種別のみに影響を限定できる
-- **並行作業の容易性**: 異なるリソース種別なら同時に作業できる
-
-変更されたディレクトリを検出し、該当するstackに対してのみplan/applyを実行する仕組みを構築しています。また、`modules/` 配下が変更された場合は、そのmoduleを利用している全てのstackに対してplanを実行します。
-
-複数のリソース種別を同時に変更した場合、それぞれのstackに対して並列にplan/applyが実行され、各stackごとにPRコメントが投稿されます。
-
-![複数stackの並列実行](/images/terraform-multiple-stacks-parallel.png)
-
-この仕組みの詳細については、別途記事にする予定です。
-
-### Plan結果の可視化
-
-Terraform plan結果がPRコメントに自動投稿され、変更内容が可視化されます。mainブランチへのマージで自動applyが実行され、完了すると元のPRコメントに結果が追記されます。
-
-![PRコメントでのTerraform Plan/Apply結果](/images/terraform-plan-apply-pr-comment.png)
-
-この仕組みにより、エンジニアなら誰でも以下のフローでインフラ変更ができます：
-
-1. ブランチを切ってTerraformコードを変更
-2. PRを作成すると、自動でplan結果がコメントされる
-3. レビュアーが影響範囲を確認
-4. マージすると自動で本番環境に適用
-
-Google Cloudコンソールを直接触る必要はありません（むしろ禁止しています）。
+[^gitops]: GitHub Actions + Workload Identity Federationによる自動plan/apply、複数tfstateの並列処理などの詳細は別記事で紹介予定です。
 
 ## 状況依存の意思決定
 
@@ -209,11 +149,8 @@ Terraform構成に「絶対的な正解」は存在しません。チーム規�
 ### 実現できたこと
 
 - プロダクト開発に関わる主要リソースのTerraform化完了
-- GitOpsフローの確立（PR→plan、merge→apply）
-- 誰でも安全にインフラ変更できる環境
-- **AI支援によるインフラ操作の民主化**
-
-特に最後の点は重要です。Terraformの書き方を知らないメンバーでも、AIに自然言語で指示することで、インフラ変更を提案できるようになりました。
+- モノレポ × リソース種別ベースの構成確立
+- **AI支援によるインフラ操作の民主化**: Terraformの書き方を知らないメンバーでも、AIに自然言語で指示してPRを作成し、レビューを受けることで安全にインフラ変更を提案できる環境
 
 ### 今後の課題
 
