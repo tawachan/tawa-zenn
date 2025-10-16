@@ -80,7 +80,7 @@ PIVOTは1つのプロダクトを1つのチームで開発しており、複数�
 
 この状況を踏まえ、以下の構成を採用しました：
 
-```
+```bash
 modules/google-cloud/       # リソース種別ごとのモジュール
   ├── cloud-run-api/
   ├── cloud-run-web/
