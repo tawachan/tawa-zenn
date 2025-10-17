@@ -9,6 +9,7 @@ topics:
   - "zennfes2025infra"
 published: true
 publication_name: "pivotmedia"
+published_at: "2025-10-18 18:00"
 ---
 
 こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
