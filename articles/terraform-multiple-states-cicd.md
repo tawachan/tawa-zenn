@@ -7,7 +7,7 @@ topics:
   - "githubactions"
   - "gcp"
   - "zennfes2025infra"
-published: false
+published: true
 publication_name: "pivotmedia"
 ---
 
