@@ -54,7 +54,7 @@ OpenAPI でもスキーマファースト開発は可能ですが、既存のレ
 
 ### ツールチェーンとの親和性と導入実績
 
-Connect RPC は Buf 社が開発しており、もともと導入していた `buf` との相性が良好です。国内でも LayerX（[モノリスからの段階的な切り出し事例](https://tech.layerx.co.jp/entry/decoupling-a-service-from-monolith-with-Protocol-buffers-and-connect-go)）などが採用しており、ナレッジやドキュメントが増え始めている点も安心材料でした。
+Connect RPC は Buf 社が開発しており、もともと導入していた `buf` との相性が良好です。国内でも LayerX などが採用しており、ナレッジやドキュメントが増え始めている点も安心材料でした[^layerx-connect]。
 
 ### Envoy が不要で導入が軽い
 
@@ -170,3 +170,4 @@ Connect RPC は protobuf で通信しながら、必要に応じて JSON にフ�
 ---
 
 [^pivot-comment]: 「PIVOTアプリ/Web新コメント機能で進化する学びと交流の場」——PIVOT CEO 佐々木による紹介動画で、コメント機能の背景や活用イメージが語られています。（[[アプリ・Web] コメント機能がスタート【佐々木紀彦】](https://pivotmedia.co.jp/app/movie/13512?display_type=article)）
+[^layerx-connect]: 「Protocol Buffers と Connect-go で段階的にモノリスからサービスを切り出した話」（LayerX テックブログ、2025年6月13日）https://tech.layerx.co.jp/entry/decoupling-a-service-from-monolith-with-Protocol-buffers-and-connect-go
