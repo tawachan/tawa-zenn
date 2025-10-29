@@ -10,6 +10,7 @@ topics:
   - "zennfes2025ai"
 published: false
 publication_name: "pivotmedia"
+slug: "engineer-as-manager-scrum-to-kanban"
 ---
 
 こんにちは。PIVOTでソフトウェアエンジニア、スクラムマスターを務めている（た）[@tawachan](https://x.com/tawachan39)です。
