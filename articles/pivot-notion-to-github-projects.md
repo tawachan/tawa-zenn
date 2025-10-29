@@ -178,28 +178,28 @@ projects: ["[your-org]/1"]  # デフォルトでプロジェクト追加
 
 ### プロダクトチームタスクボード (Project #1)
 
-- **ID**: `PVT_kwXXXXXXXXXXXXXXX`（実際のIDはマスク）
+- **ID**: `[PROJECT_ID]`
 - **ステータス**: Inbox/Todo/In Progress/In Review/Done/QA/Next Release
 
 ### 重要なID・識別子
 
-- **プロジェクトID**: `PVT_kwXXXXXXXXXXXXXXX`
-- **Status Field ID**: `PVTSSF_XXXXXXXXXXXXXXXXX`
-- **Task Type Field ID**: `PVTSSF_XXXXXXXXXXXXXXXXX`
+- **プロジェクトID**: `[PROJECT_ID]`
+- **Status Field ID**: `[STATUS_FIELD_ID]`
+- **Task Type Field ID**: `[TASK_TYPE_FIELD_ID]`
 
 ### よく使うコマンドテンプレート
 
 ```bash
 # Issue作成とプロジェクト追加
-gh issue create --repo PIVOT-media/pivot-project-management \
+gh issue create --repo [your-org]/[project-management-repo] \
   --title "タスクタイトル" \
   --body "詳細"
 
 # ステータス変更
 gh project item-edit --id [ITEM_ID] \
-  --project-id PVT_kwXXXXXXXXXXXXXXX \
-  --field-id PVTSSF_XXXXXXXXXXXXXXXXX \
-  --single-select-option-id XXXXXXXX  # Todo
+  --project-id [PROJECT_ID] \
+  --field-id [STATUS_FIELD_ID] \
+  --single-select-option-id [STATUS_OPTION_ID]  # Todo
 ```
 
 AIが参照しやすい形で情報を整理しています。
