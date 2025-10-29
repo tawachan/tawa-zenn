@@ -9,15 +9,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tawa-zenn@workspace:."
   dependencies:
-    zenn-cli: "npm:^0.2.3"
+    zenn-cli: "npm:^0.2.9"
   languageName: unknown
   linkType: soft
 
-"zenn-cli@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "zenn-cli@npm:0.2.3"
+"zenn-cli@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "zenn-cli@npm:0.2.9"
   bin:
     zenn: dist/server/zenn.js
-  checksum: 10c0/534a1b833fc5679d971e7f9cb9964ed7c46d5cab956782a7d88f6bd33d2ea75e1905dfe7bb2110a3aa9520f51b218a1e9b1074fbe61a8644eb75f1965419fa04
+  checksum: 10c0/502a0d589f85a800b41f4bbabc6912395e6f038d58d2d5c6e47dd6692baa7cf5c5ca0838c777aa447995732ff065ebce202a4a7e1df770c135a13b140db9192e
   languageName: node
   linkType: hard
