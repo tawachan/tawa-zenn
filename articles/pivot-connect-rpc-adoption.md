@@ -46,6 +46,92 @@ gRPC であれば protobuf を前提にしたスキーマ駆動開発へ舵を�
 
 Connect RPC は、HTTP/1.1/2 の両方で動作し、protobuf と JSON のどちらでもやり取りできます。proto ファイルを中心に据えつつ、既存の Web 環境やデバッグのしやすさを手放さなくて済む――このバランスが今回の要件にフィットしていました。また、将来的に gRPC へ移行したくなったときも、proto ファイルを保持していれば移行パスが開かれている点も魅力でした。
 
+## Connect RPC を選んだ理由
+
+今回検討した選択肢の中で Connect RPC を採用したのは、以下の点が決め手になりました。
+
+- 既存の proto ファイルを活かせるため、スイッチングコストが最小限で済む
+- gRPC と互換性があり、将来的な完全移行やストリーミング対応の道が残っている
+- Envoy などの専用プロキシが不要で、インフラ構成を増やさずに運用できる
+- HTTP/1.1 をサポートしているため、ブラウザや CDN との相性が良い
+- JSON/Protobuf の両対応で、curl や Postman を用いたデバッグがこれまで通り行える
+- Buf 社が開発しているため、`buf` と組み合わせたコード生成パイプラインをそのまま活用できる
+- 国内外で導入実績が増えており、ドキュメントやナレッジが集まりつつある
+
+## Connect RPC の技術的な優位性
+
+### 自動コード生成による開発効率の改善
+
+Connect RPC へ移行すると、リクエストとレスポンスの型を proto にまとめ、生成されたインターフェースを実装するだけで通信部分が完結します。従来の REST + 手書き実装と比べると、次のような差があります。
+
+**Before（REST + 手作業）**
+
+```go
+func (c *V1ChapterController) RegisterUserRating(ctx echo.Context) error {
+    // 手動で JSON を構造体へ変換
+    request := context.MustGetRequestDataFrom[RegisterUserRatingRequestData](ctx)
+    userCtx := context.GetUserContext(ctx)
+
+    // enum などのバリデーションも散在
+    displayType, err := valueobject.NewEpisodeDisplayType(request.DisplayType)
+    if err != nil {
+        return errors.NewBadRequestError(errors.WithMessage("不正な表示タイプです。"))
+    }
+
+    // ビジネスロジック
+    if err := c.useCase.Chapter().RegisterUserRatingUseCase(
+        ctx.Request().Context(),
+        userCtx.MembershipId,
+        request.EpisodeId,
+        request.RatingValue,
+        displayType,
+    ); err != nil {
+        return failure.Wrap(err)
+    }
+
+    // Protobuf への変換も手作業
+    return c.Controller.Respond(ctx, &pivotapigo.RegisterUserRatingResponse{})
+}
+```
+
+**After（Connect RPC）**
+
+```go
+func (c *ChapterService) RegisterUserRating(
+    ctx context.Context,
+    req *connect.Request[chapterv1.RegisterUserRatingRequest],
+) (*connect.Response[chapterv1.RegisterUserRatingResponse], error) {
+    userCtx := usercontext.MustFrom(ctx)
+
+    if err := c.usecase.Chapter().RegisterUserRating(
+        ctx,
+        userCtx.MembershipID,
+        req.Msg.EpisodeId,
+        req.Msg.RatingValue,
+        req.Msg.DisplayType,
+    ); err != nil {
+        return nil, connect.NewError(connect.CodeInternal, err)
+    }
+
+    return connect.NewResponse(&chapterv1.RegisterUserRatingResponse{}), nil
+}
+```
+
+生成された型を使うことで、通信層に関するボイラープレートがほとんど消えています。
+
+### 型安全性とスキーマファーストな開発
+
+- proto にスキーマを集約できるので、Go / TypeScript / Swift / Kotlin へ同じ型を配布できる
+- API 変更時に `buf generate` を走らせるだけで、全プラットフォームのクライアントが同期される
+- 型のズレはコンパイル時に検知でき、リリース後に確認する手戻りを減らせる
+
+### ブラウザとモバイルの両立
+
+- HTTP/1.1 に対応しており、ブラウザから `@connectrpc/connect-web` 経由で直接呼び出し可能
+- CDN やプロキシとの相性がよく、既存の配信基盤をそのまま活かせる
+- JSON でもエンドポイントを公開できるため、curl や Postman によるデバッグがこれまで通り行える
+- モバイルクライアント向けには Swift/Kotlin の SDK を同じ proto から生成できる
+
 ## Connect RPC で組み始めてみる
 
 ### まずは proto ファイルを整える
