@@ -54,7 +54,7 @@ OpenAPI でもスキーマファースト開発は可能ですが、既存のレ
 
 ### ツールチェーンとの親和性と導入実績
 
-Connect RPC は Buf 社が開発しており、もともと導入していた `buf` との相性が良好です。国内でも LayerX などが採用しており、ナレッジやドキュメントが増え始めている点も安心材料でした。
+Connect RPC は Buf 社が開発しており、もともと導入していた `buf` との相性が良好です。国内でも LayerX（[モノリスからの段階的な切り出し事例](https://tech.layerx.co.jp/entry/decoupling-a-service-from-monolith-with-Protocol-buffers-and-connect-go)）などが採用しており、ナレッジやドキュメントが増え始めている点も安心材料でした。
 
 ### Envoy が不要で導入が軽い
 
