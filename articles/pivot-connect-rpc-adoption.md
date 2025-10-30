@@ -4,6 +4,7 @@ emoji: "🔌"
 type: "tech"
 topics: ["connectrpc", "protobuf", "grpc", "go", "api"]
 published: false
+publication_name: "pivotmedia"
 ---
 
 こんにちは。PIVOTでソフトウェアエンジニアとして、Web・バックエンド・インフラを横断している[@tawachan](https://x.com/tawachan39)です。
