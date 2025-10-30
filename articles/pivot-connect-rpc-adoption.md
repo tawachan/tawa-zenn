@@ -7,13 +7,13 @@ published: false
 publication_name: "pivotmedia"
 ---
 
-こんにちは。PIVOTでソフトウェアエンジニアとして、Web・バックエンド・インフラを横断している[@tawachan](https://x.com/tawachan39)です。
+こんにちは。PIVOTでソフトウェアエンジニアとして、Webフロントエンド、バックエンド、インフラを横断的に担当している[@tawachan](https://x.com/tawachan39)です。
 
 この記事では、**手動でのAPI運用に限界を感じていた私たちのチームが、Connect RPCを選択して課題を解決していった経緯**を共有します。ビジネス映像メディア「PIVOT」における**大規模なコメント機能開発を機に、スキーマファースト開発へ移行した実体験**の記録です。
 
 私たちのチームは、これまでREST APIを手動で運用してきました。レスポンスにはprotobufを活用していたものの、リクエスト側はJSONのまま手書きで実装し、**ドキュメントとコードの乖離に日常的に悩まされ**ていました。「このAPIはPOSTですかPUTですか？」といったSlackでの確認が増え、開発効率を損なう状況が続いていました。
 
-しかし、2025年のコメント機能リリースを機に、**Connect RPCを導入してprotoファイルを軸にしたスキーマ駆動開発**に移行。Go（サーバー）、TypeScript（Web）、Swift（iOS）、Kotlin（Android）全てで同じスキーマを共有し、型安全性とデバッグ体験を両立できる体制を整えました。この記事は、その意思決定プロセスと導入で得られた改善を紹介します。
+しかし、2025年のコメント機能リリース[^pivot-comment]を機に、**Connect RPCを導入してprotoファイルを軸にしたスキーマ駆動開発**に移行。Go（サーバー）、TypeScript（Web）、Swift（iOS）、Kotlin（Android）全てで同じスキーマを共有し、型安全性とデバッグ体験を両立できる体制を整えました。この記事は、その意思決定プロセスと導入で得られた改善を紹介します。
 
 ## REST API運用で抱えていた3つの課題
 
@@ -208,5 +208,5 @@ Connect RPC は JSON でもエンドポイントを公開できるので、curl 
 
 ---
 
-[^pivot-comment]: 「[アプリ・Web] コメント機能がスタート【佐々木紀彦】」（PIVOT、2025年10月15日）https://pivotmedia.co.jp/app/movie/13512?display_type=article
-[^layerx-connect]: 「Decoupling a service from monolith with Protocol buffers and connect-go」（LayerX エンジニアブログ、2023年7月4日）https://tech.layerx.co.jp/entry/decoupling-a-service-from-monolith-with-Protocol-buffers-and-connect-go
+[^pivot-comment]: PIVOTアプリ/Webの新コメント機能について、CEO佐々木が詳しく解説しています。YouTubeとは異なるクローズドな学びの場として、ユーザーと運営の双方向コミュニケーションを重視した設計や、今後のコミュニティ発展への想いが語られているので、よかったら見てみてください。「[[アプリ・Web] コメント機能がスタート【佐々木紀彦】](https://pivotmedia.co.jp/app/movie/13512?display_type=article)」（PIVOT、2025年10月15日）
+[^layerx-connect]: LayerXエンジニアブログでは複数のConnect RPC活用事例が公開されており、参考になりました。例：「[Decoupling a service from monolith with Protocol buffers and connect-go](https://tech.layerx.co.jp/entry/decoupling-a-service-from-monolith-with-Protocol-buffers-and-connect-go)」（2023年7月4日）、「[Connect を HTTP/1.1 + JSON API として使う！Salesforce 連携 API の実装事例](https://tech.layerx.co.jp/entry/2025/06/13/104244)」（2025年6月13日）など
