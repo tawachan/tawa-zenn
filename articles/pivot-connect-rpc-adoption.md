@@ -3,7 +3,8 @@ title: "手動API運用からの脱却 —— PIVOTがConnect RPCで解決した
 emoji: "🔌"
 type: "tech"
 topics: ["connectrpc", "protobuf", "grpc", "go", "api"]
-published: false
+published: true
+published_at: "2025-10-31 16:30"
 publication_name: "pivotmedia"
 ---
 
