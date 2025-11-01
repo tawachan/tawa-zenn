@@ -9,7 +9,7 @@ topics:
   - "dx"
   - "ai"
 published: true
-published_at: "2025-11-05 10:00"
+published_at: "2025-11-05 17:00"
 publication_name: "pivotmedia"
 ---
 
