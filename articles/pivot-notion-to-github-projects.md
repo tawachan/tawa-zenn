@@ -8,7 +8,8 @@ topics:
   - "projectmanagement"
   - "dx"
   - "ai"
-published: false
+published: true
+published_at: "2025-11-05 10:00"
 publication_name: "pivotmedia"
 ---
 
