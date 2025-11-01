@@ -8,7 +8,8 @@ topics:
   - "agile"
   - "ai"
   - "zennfes2025ai"
-published: false
+published: true
+published_at: "2025-11-03 17:00"
 publication_name: "pivotmedia"
 ---
 
