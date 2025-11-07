@@ -1,7 +1,7 @@
 ---
 title: "なぜタスク管理をNotionからGitHub Projectsへ移行したのか - AI時代の開発効率を最大化する選択"
 emoji: "📋"
-type: "tech"
+type: "idea"
 topics:
   - "github"
   - "notion"
