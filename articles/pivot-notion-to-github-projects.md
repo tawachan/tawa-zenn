@@ -13,7 +13,7 @@ published_at: "2025-11-05 17:00"
 publication_name: "pivotmedia"
 ---
 
-こんにちは。PIVOTでソフトウェアエンジニア、スクラムマスターを務めている（た）[@tawachan](https://x.com/tawachan39)です。
+こんにちは。PIVOTでソフトウェアエンジニア、スクラムマスターを務めて[いる|いた][@tawachan](https://x.com/tawachan39)です。
 
 この記事では、PIVOTのプロダクトチームがNotionからGitHub Projectsへタスク管理ツールを移行した経緯と、具体的な実装方法について紹介します。
 
