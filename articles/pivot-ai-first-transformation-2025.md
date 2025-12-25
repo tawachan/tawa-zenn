@@ -4,11 +4,9 @@ emoji: "🤖"
 type: "tech"
 topics:
   - "ai"
-  - "llm"
-  - "devtools"
-  - "devprocess"
-  - "zennfes2025ai"
-published: true
+  - "claude"
+  - "codex"
+published: false
 publication_name: "pivotmedia"
 ---
 
