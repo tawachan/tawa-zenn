@@ -1,6 +1,6 @@
 ---
 title: "なぜ今、モジュラーモノリスという意思決定をしたのか ― 課題認識の変化とタイミングの記録 ―"
-emoji: "🏗️"
+emoji: "🗿"
 type: "tech"
 topics:
   - "architecture"
