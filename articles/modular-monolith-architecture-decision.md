@@ -7,8 +7,9 @@ topics:
   - "ddd"
   - "go"
   - "monolith"
-published: false
+published: true
 publication_name: "pivotmedia"
+published_at: 2025-12-27 18:00
 ---
 
 こんにちは。PIVOTのテックリード [@tawachan](https://x.com/tawachan39) です。普段はWebフロントエンド、バックエンド、インフラを横断的に見ながら、チームの技術的な意思決定や開発効率化に取り組んでいます。
@@ -201,3 +202,8 @@ modules/<context>/
 もし書き換えても違和感が残っている場合は、次に向き合うべきは実装技術ではなく、**設計そのもの**かもしれません。
 
 なお、技術アドバイザーの川島さんのお力添えがあって前に進められております。少人数ながらも技術的に安心して取り組めているのは、川島さんがいてこそです。この場をお借りしてお礼申し上げます。
+
+
+## 関連記事
+
+- **AI活用の試行錯誤**: [PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか](https://zenn.dev/pivotmedia/articles/pivot-ai-first-transformation-2025) - 2025年のAI活用の軌跡と変化について、チーム目線で振り返っています。この技術的意思決定も、AI時代の開発体制変化の一環として行われました。
