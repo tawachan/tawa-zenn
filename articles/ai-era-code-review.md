@@ -7,7 +7,7 @@ topics:
   - "ai"
   - "ddd"
   - "teamwork"
-published: false
+published: true
 publication_name: "pivotmedia"
 published_at: 2025-12-28 18:00
 ---

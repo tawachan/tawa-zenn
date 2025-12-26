@@ -7,7 +7,7 @@ topics:
   - "ddd"
   - "go"
   - "monolith"
-published: false
+published: true
 publication_name: "pivotmedia"
 published_at: 2025-12-27 18:00
 ---
