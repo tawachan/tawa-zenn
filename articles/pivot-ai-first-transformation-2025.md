@@ -1,7 +1,7 @@
 ---
 title: "PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか"
 emoji: "🤖"
-type: "tech"
+type: "idea"
 topics:
   - "ai"
   - "claude"
