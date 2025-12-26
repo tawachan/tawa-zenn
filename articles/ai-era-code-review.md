@@ -122,8 +122,6 @@ AIは強力なパートナーだと感じていますが、最終的な設計責
 
 このシリーズでは、PIVOTでのAI時代の開発についてさまざまな角度から記録しています。
 
-- **AI活用の試行錯誤**: [PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか](https://zenn.dev/pivotmedia/articles/pivot-ai-first-transformation-2025)
-  2025年のAI活用の軌跡と変化について、チーム目線で振り返っています
+- **AI活用の試行錯誤**: [PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか](https://zenn.dev/pivotmedia/articles/pivot-ai-first-transformation-2025) - 2025年のAI活用の軌跡と変化について、チーム目線で振り返っています
 
-- **モジュラーモノリス設計の意思決定**: [なぜ今、モジュラーモノリスという意思決定をしたのか](https://zenn.dev/pivotmedia/articles/modular-monolith-architecture-decision)
-  技術的な意思決定プロセスやタイミングについて、テックリード目線で書いています
+- **モジュラーモノリス設計の意思決定**: [なぜ今、モジュラーモノリスという意思決定をしたのか](https://zenn.dev/pivotmedia/articles/modular-monolith-architecture-decision) - 技術的な意思決定プロセスやタイミングについて、テックリード目線で書いています

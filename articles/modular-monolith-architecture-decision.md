@@ -206,6 +206,4 @@ modules/<context>/
 
 ## 関連記事
 
-- **AI活用の試行錯誤**: [PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか](https://zenn.dev/pivotmedia/articles/pivot-ai-first-transformation-2025)
-
-  2025年のAI活用の軌跡と変化について、チーム目線で振り返っています。この技術的意思決定も、AI時代の開発体制変化の一環として行われました。
+- **AI活用の試行錯誤**: [PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか](https://zenn.dev/pivotmedia/articles/pivot-ai-first-transformation-2025) - 2025年のAI活用の軌跡と変化について、チーム目線で振り返っています。この技術的意思決定も、AI時代の開発体制変化の一環として行われました。
