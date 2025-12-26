@@ -1,7 +1,7 @@
 ---
 title: "AI時代のコードレビュー ― 何を見るべきか、何は見なくてよくなったか"
 emoji: "👀"
-type: "tech"
+type: "idea"
 topics:
   - "codereview"
   - "ai"
