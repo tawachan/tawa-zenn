@@ -8,6 +8,7 @@ topics:
   - "codex"
 published: true
 publication_name: "pivotmedia"
+published_at: 2025-12-26 18:00
 ---
 
 こんにちは。PIVOTのテックリード [@tawachan](https://x.com/tawachan39) です。普段はWebフロントエンド、バックエンド、インフラを横断的に見ながら、チームの技術的な意思決定や開発効率化に取り組んでいます。
@@ -197,6 +198,17 @@ https://zenn.dev/pivotmedia/articles/pivot-notion-to-github-projects
 たとえば Git worktree を使った並列作業や tmux での同時実行など、**複数のAIエージェントを組み合わせる動き方**も知見として出てきています。チーム内でも少し試してはいますが、日常の仕事として馴染むところまではまだ届いていません。伸びしろは大きいと感じています。
 
 同時に、Howだけに寄り過ぎず、**What**（どんなプロダクトにしていくか）にリソースを割ける状態を目指しています。AIの力で「やり方」を軽くし、**価値づくりに使える時間を増やす**方向で、どうなるかはまだわからないので手を動かしながら探っていきます。
+
+
+## 関連記事
+
+このシリーズでは、PIVOTでのAI時代の開発についてさまざまな角度から記録しています。
+
+- **モジュラーモノリス設計の意思決定**: [なぜ今、モジュラーモノリスという意思決定をしたのか](https://zenn.dev/pivotmedia/articles/modular-monolith-architecture-decision)
+  技術的な意思決定プロセスやタイミングについて、テックリード目線で書いています
+
+- **コードレビューの変化**: [AI時代のコードレビュー ― 何を見るべきか、何は見なくてよくなったか](https://zenn.dev/pivotmedia/articles/ai-era-code-review)
+  AIが前提となった開発フローでのレビューの観点について、エンジニア目線で解説しています
 
 
 ## おわりに

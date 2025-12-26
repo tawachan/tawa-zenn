@@ -9,6 +9,7 @@ topics:
   - "teamwork"
 published: false
 publication_name: "pivotmedia"
+published_at: 2025-12-28 18:00
 ---
 
 こんにちは。PIVOTでソフトウェアエンジニアをしている[@tawachan](https://x.com/tawachan39)です。
@@ -115,3 +116,14 @@ AIは強力なパートナーだと感じていますが、最終的な設計責
 これが唯一の正解だとは考えていません。他のチームではどのようにレビューの役割が変わったのか、あるいは変わっていないのか、ぜひ皆さんの所感も聞いてみたいです。
 
 私自身も、これからも色々探りながら、開発プロセスのアップデートを続けていきたいと思っています。
+
+
+## 関連記事
+
+このシリーズでは、PIVOTでのAI時代の開発についてさまざまな角度から記録しています。
+
+- **AI活用の試行錯誤**: [PIVOTプロダクトチームのAI活用1年間の試行錯誤 ── 2025年、何を試して何を学んだか](https://zenn.dev/pivotmedia/articles/pivot-ai-first-transformation-2025)
+  2025年のAI活用の軌跡と変化について、チーム目線で振り返っています
+
+- **モジュラーモノリス設計の意思決定**: [なぜ今、モジュラーモノリスという意思決定をしたのか](https://zenn.dev/pivotmedia/articles/modular-monolith-architecture-decision)
+  技術的な意思決定プロセスやタイミングについて、テックリード目線で書いています
