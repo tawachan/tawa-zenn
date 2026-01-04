@@ -1,201 +1,392 @@
 ---
-title: "UGreen NASをS3にバックアップする構成"
+title: "UGreen NASのデータをS3にrcloneでバックアップする構成メモ"
 emoji: "💾"
-type: "idea"
+type: "tech"
 topics:
   - "NAS"
   - "S3"
   - "backup"
   - "docker"
+  - "rclone"
 published: false
 published_at: "2026-01-04 10:00"
 # publication_name: "pivotmedia" # 個人記事のためコメントアウト
 ---
 
-こんにちは。
+もう仕事始めが近くて、年末年始の9連休が終わるなんて信じられない [@tawachan](https://x.com/tawachan39) です。
 
-今回は、UGreen NASを導入し、そのデータをAmazon S3にバックアップする構成について検討した内容をまとめます。
+年末年始休暇のミッションとして、UGreen NASを購入して個人データの移行を進めていました。ようやく落ち着いたので、その中で構築したS3へのバックアップの仕組みをメモとして残しておきます。
+
+NASだけだと災害や故障に対して不安があるため、クラウドにバックアップを取ることにしました（ちなみに一番時間がかかったのは、Google Photosからの写真ダウンロードと適切な配置、撮影日時がバグっているものの調整でしたが...）。
 
 ## 背景
 
-個人用途でNASの導入を検討した結果、UGreenのNASync DH2300 NAS Storage ([製品ページ](https://nas.ugreen.jp/products/ugreen-nasync-dh2300-nas-storage?srsltid=AfmBOoqithkiRj1X2ju2W_yAJKTVQUj1b4NHxWfu0J8wcB5QdINyHVEW)) を購入しました。初めてのNASということもあり、手頃な価格帯のこのモデルを選択しました。
+個人用途でNASの導入を検討した結果、UGreenのNASync DH2300 NAS Storage[^nas-model] を購入しました。初めてのNASということもあり、手頃な価格帯のこのモデルを選択しました。
 
-現在、8TBのHDDを1台のみ搭載していますが、将来的にはRAID1構成も視野に入れています。しかし、RAIDはあくまで物理的な冗長性を提供するものであり、災害や人為的ミスに対するバックアップとしては不十分です。そのため、クラウドストレージへのバックアップが必須と考え、コストパフォーマンスとAWSの安定性を考慮してAmazon S3を採用することにしました。
+現在、8TBのHDDを1台のみ搭載しています[^hdd-config]。RAIDはあくまで物理的な冗長性を提供するものであり、NAS自体が物理的に壊れたら終わりです。また、災害や人為的ミス（誤削除など）に対するバックアップとしても不十分です。
 
-## 構成案
+そのため、クラウドストレージへのバックアップが必須と考えました。S3を選んだのは、Google Cloud StorageやAzure Blob Storageと比べてコストが安そう[^cloud-comparison]なのと、AWSの方がメジャーでトラブルシュート情報が見つかりやすいという理由からです。
 
-UGreen NAS DH2300は廉価版であり、メモリも4GBと少なめのため、標準のAppストアではDockerが推奨されていません。しかし、公式サイトからファイルをダウンロードしてインストールすることでDockerを動作させることが可能です（自己責任での運用となります）。
+[^nas-model]: [UGreen NASync DH2300 NAS Storage 製品ページ](https://nas.ugreen.jp/products/ugreen-nasync-dh2300-nas-storage)
 
-このDocker環境を利用し、定期的なバックアップを自動化する仕組みを構築します。
+[^docker-limitation]: ただし、UGreen NASのDockerはDocker Hubからしかリモートイメージを取得できないようです。GitHub Container RegistryやAmazon ECRなどは使えないため、使えるイメージが限られます。結局、ローカルにDockerfileを作って自分でビルドし、ローカルイメージを使っていく方が安牌そうだという所感を得ました。
 
-具体的な構成は以下の通りです。
+[^hdd-config]: 2台でRAID1を組んで冗長構成にすることも考えましたが、HDD追加費用がそこそこかかることと、根本的なバックアップにはならないため、まずは1台から始めました。使う容量に対して8TBで十分であれば将来的に冗長性のために追加、足りなければ拡張のために買い足すかもしれません。
 
-1.  **Docker環境のセットアップ**: UGreen NAS DH2300にDockerをインストールします。
-### 2. 共有フォルダの準備とDockerからのアクセス
+[^cloud-comparison]: ストレージの保存料金だけを見ると一番安かったのですが、アップロードやデータ確認時のリクエスト料金まで含めたトータルコストで比較したわけではありません。実際に運用してみて、リクエスト料金が想像以上にかかることがわかりました。
 
-UGreen NASの管理画面から、バックアップしたいデータが格納されている共有フォルダを作成・設定します。この際、フォルダのパス（例: `/volume1/BackupData` など）を控えておきます。
+## 要件
 
-Dockerコンテナからこの共有フォルダにアクセスするためには、`docker-compose.yml` で `volumes` 設定を使用します。これにより、NAS上の物理パスをDockerコンテナ内のパスにマウントできます。
+バックアップの仕組みを作るにあたって、以下のような要件を考えました。
 
-```yaml
-volumes:
-  - /volume1/BackupData:/app/backup_data # NASの共有フォルダをコンテナにマウント
+### コストを抑える
+
+個人用途なので、できるだけコストを抑えたいというのが最優先です。バックアップは災害やNASの故障など、万が一の事態に備えるためのもので、通常の運用ではアクセスしません。
+
+### 定期実行で意識しないで済む
+
+手動でバックアップを取るのは忘れるリスクがあります。基本的に意識しなくても自動でバックアップが取られる状態を目指します。
+
+### 差分同期で実行時間を短縮
+
+8TBのデータを毎回フルバックアップするのは、ネットワークにも負荷をかけますし、実行時間も長くなります。NASを使っている最中にバックアップ処理が動いているのは避けたい状況です。
+
+### 運用の仕組みをシンプルに
+
+「今どういう状況なのか」が複雑だと、デバッグが難しくなったり運用が面倒になります。以下のような複雑さは避けたいと考えました。
+
+- ファイルの更新日時ベースでの管理
+- フォルダごとにバックアップの頻度やストレージクラスを変える
+- ファイルの種類によって異なる扱いをする
+
+### 不要なファイルを適切に除外
+
+ドットファイル（`.DS_Store`など）やNAS特有のシステムフォルダ（`#recycle`など）は、バックアップしても意味がありません。
+
+### NASの運用をバックアップのために変えない
+
+バックアップという本来関係ないもののために、NASの使い方を制限したくありません。「バックアップしたいものは特定のフォルダに入れる」といった運用ルールは設けたくない状況です。
+
+## 構成
+
+上記の要件を満たすため、以下のような構成にしました。
+
+- **ストレージクラス**: S3 DEEP_ARCHIVE（コスト最優先）
+- **同期方式**: rclone syncによる差分同期
+- **実行方法**: Docker + cronによる定期実行（毎日午前2時）
+- **除外設定**: ドットファイル、システムフォルダをフィルタで除外
+- **対象範囲**: NAS全体（`/home`）をそのままバックアップ
+
+### Docker環境のセットアップ
+
+UGreen NAS DH2300は廉価版で、メモリも4GBと少なめです。調べてみると、デフォルトではDockerに対応していなさそうでした[^docker-support]。しかし、公式サイトからファイルをダウンロードしてインストールすることで、Dockerを動作させることができました[^docker-install]。
+
+![UGreen公式サイトのDockerダウンロードページ](/images/ugreen-nas-docker-download.png)
+
+[^docker-support]: [Reddit: DH2300 does not support Docker but...](https://www.reddit.com/r/UgreenNASync/comments/1of9lny/dh2300_does_not_support_docker_but/) など、標準のAppストアではDockerが選択できないという情報がありました。
+
+[^docker-install]: [実際にインストールできたときのツイート](https://x.com/tawachan39/status/2003465060535169464)。公式サポート外のため、自己責任での運用となります。
+
+### 全体構成図
+
+```
+┌─────────────────────────────┐
+│   UGreen NAS                │
+│                             │
+│  ┌────────────────────────┐ │
+│  │ Cron Scheduler         │ │
+│  │ (Alpine + crond)       │ │
+│  │                        │ │
+│  │ 定期実行（毎日午前2時）  │ │
+│  └───────┬────────────────┘ │
+│          │                  │
+│          │ docker run       │
+│          ▼                  │
+│  ┌────────────────────────┐ │
+│  │ rclone sync            │ │
+│  │ (実行時のみ起動)        │ │
+│  │                        │ │
+│  │ /home → S3             │ │
+│  └────────────────────────┘ │
+│                             │
+└─────────────────────────────┘
+              │
+              │ rclone sync
+              ▼
+    ┌───────────────────┐
+    │  Amazon S3        │
+    │  DEEP_ARCHIVE     │
+    └───────────────────┘
 ```
 
-上記の例では、NAS上の `/volume1/BackupData` をコンテナ内の `/app/backup_data` としてマウントしています。バックアップスクリプトはこのコンテナ内のパスにアクセスしてデータを処理します。
+### ディレクトリ構成
 
-### 3. Cron Scheduler (Docker Compose)
+```
+/volume1/docker/nas-backup/
+├── docker-compose.yaml
+├── .env
+├── rclone/
+│   └── rclone.conf
+├── scheduler/
+│   ├── Dockerfile
+│   └── entrypoint.sh
+├── scripts/
+│   └── backup.sh
+└── logs/
+```
 
-Cronスケジューラは、`docker-compose.yml` を利用して構築します。ここでは、バックアップスクリプトを実行する別のDockerコンテナを定期的に起動する仕組みを考えます。
+## 実装
 
-#### `docker-compose.yml` の例
+### 1. rclone設定ファイル
+
+`rclone/rclone.conf`:
+
+```ini
+[s3]
+type = s3
+provider = AWS
+env_auth = true
+region = us-east-1
+storage_class = DEEP_ARCHIVE
+```
+
+`env_auth = true` により、環境変数からAWS認証情報を取得します。これにより、設定ファイルに認証情報を書かずに済みます。
+
+リージョンは `us-east-1`（バージニア）を選択しています。東京リージョンと比べてコストが安いためです[^region-cost]。
+
+[^region-cost]: 例えば、DEEP_ARCHIVEのストレージコストは us-east-1 が $0.00099/GB/月、ap-northeast-1（東京）が $0.002/GB/月 と約2倍の差があります。
+
+### 2. Docker Compose設定
+
+`docker-compose.yaml`:
 
 ```yaml
-version: '3.8'
+version: "3.9"
+
 services:
-  cron-scheduler:
-    image: alpine/crond:latest # 軽量なalpineベースのcrondイメージを使用
-    container_name: nas-backup-cron
-    volumes:
-      - ./crontabs:/etc/crontabs # crontabファイルをマウント
-      - /var/run/docker.sock:/var/run/docker.sock # Dockerコマンドを実行するためにDockerソケットをマウント
-    environment:
-      - TZ=Asia/Tokyo # タイムゾーン設定
-    restart: always # 常時起動
-
-  backup-executor:
+  scheduler:
     build:
-      context: ./backup-script # backup-scriptディレクトリにDockerfileを配置
-      dockerfile: Dockerfile
-    container_name: nas-s3-backup-executor
-    volumes:
-      - /volume1/BackupData:/app/backup_data # バックアップ対象データをマウント
+      context: ./scheduler
+    container_name: rclone-scheduler
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    working_dir: /work
+
     environment:
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-    # crondからの実行を想定し、restart: "no" に設定
-    restart: "no"
+      TZ: Asia/Tokyo
+      AWS_DEFAULT_REGION: us-east-1
+      CRON_SCHEDULE: "0 2 * * *"
+
+      CRON_COMMAND: >
+        docker run --rm --read-only
+        --entrypoint sh
+        -e TZ=Asia/Tokyo
+        -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+        -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+        -e AWS_DEFAULT_REGION=us-east-1
+        -v /home:/data:ro
+        -v /volume1/docker/nas-backup/rclone:/config/rclone:ro
+        -v /volume1/docker/nas-backup/scripts:/scripts:ro
+        -v /volume1/docker/nas-backup/logs:/logs
+        rclone/rclone:latest
+        /scripts/backup.sh
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/work
 ```
 
-#### `crontabs` ファイルの例
+ポイント:
 
-`crontabs/root` ファイルとして以下の内容を作成します。これは、毎日午前3時に `backup-executor` コンテナを実行する例です。
+- `scheduler` サービスが cron として動作
+- `CRON_COMMAND` でrcloneコンテナを実行
+- `/home` を読み取り専用 (`:ro`) でマウント
+- AWS認証情報は環境変数で渡す
 
-```cron
-# 毎日午前3時にバックアップを実行
-0 3 * * * docker start nas-s3-backup-executor && docker logs -f nas-s3-backup-executor
-```
+### 3. スケジューラコンテナ
 
-この設定では、`cron-scheduler` コンテナ内で `docker start nas-s3-backup-executor` コマンドを実行し、バックアップ処理を行うコンテナを起動します。`docker logs -f nas-s3-backup-executor` はログを追跡するためのものですが、実際の運用ではバックグラウンド実行を検討するなど調整が必要です。
-
-### 4. バックアップスクリプト (Docker Container)
-
-S3へのバックアップを実行するコンテナ `backup-executor` を作成します。このコンテナは `aws cli` を利用して `s3 sync` コマンドを実行します。
-
-#### `backup-script/Dockerfile` の例
+`scheduler/Dockerfile`:
 
 ```dockerfile
-FROM amazon/aws-cli:latest
+FROM alpine:3.20
 
-WORKDIR /app
+RUN apk add --no-cache tzdata docker-cli
 
-COPY backup.sh .
-RUN chmod +x backup.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["./backup.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 ```
 
-#### `backup-script/backup.sh` の例
+`scheduler/entrypoint.sh`:
+
+```sh
+#!/bin/sh
+set -eu
+
+: "${CRON_SCHEDULE:?CRON_SCHEDULE is required}"
+: "${CRON_COMMAND:?CRON_COMMAND is required}"
+
+# cron 設定を生成
+echo "${CRON_SCHEDULE} ${CRON_COMMAND}" > /etc/crontabs/root
+
+# foreground 実行
+exec crond -f -l 8
+```
+
+Alpine Linuxの軽量イメージを使い、Docker CLIをインストールしています。これにより、スケジューラコンテナから別のDockerコンテナ（rclone）を起動できます。
+
+### 4. バックアップスクリプト
+
+`scripts/backup.sh`:
+
+```sh
+#!/bin/sh
+set -eu
+
+SRC="/data"
+S3_BUCKET="your-nas-backup-bucket"
+S3_PREFIX="home"
+REMOTE="s3:${S3_BUCKET}/${S3_PREFIX}"
+
+LOG_DIR="/logs"
+TS="$(date +%F_%H%M%S)"
+LOG_FILE="${LOG_DIR}/rclone-sync-${TS}.log"
+
+mkdir -p "$LOG_DIR"
+
+log() { echo "$(date '+%F %T') $*"; }
+
+log "START: rclone sync ${SRC} -> ${REMOTE}"
+log "INFO: log_file=${LOG_FILE}"
+log "INFO: options: size-only=on delete-excluded=on progress=on stats=30s"
+log "INFO: excludes: dot-files, dot-dirs, #recycle, DS_Store, Thumbs.db"
+
+rclone sync "$SRC" "$REMOTE" \
+  --config /config/rclone/rclone.conf \
+  --size-only \
+  --delete-excluded \
+  --filter "- **/.*/**" \
+  --filter "- **/.*" \
+  --filter "- **/#recycle/**" \
+  --filter "- **/@eaDir/**" \
+  --filter "- **/.DS_Store" \
+  --filter "- **/Thumbs.db" \
+  --filter "+ **" \
+  --log-level INFO \
+  --log-file "$LOG_FILE" \
+  --stats 30s \
+  -P
+```
+
+ポイント:
+
+- `--size-only`: サイズだけで変更判定（タイムスタンプは見ない）
+- `--delete-excluded`: S3側の余分なファイルを削除（同期）
+- `--filter`: ドットファイル、システムフォルダを除外
+
+### 5. 環境変数設定
+
+`.env` ファイルにAWS認証情報を記載します（Gitにはコミットしない）。
+
+```.env
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=xxxxx...
+```
+
+### 6. コンテナの起動
+
+UGreen NASのDockerアプリのGUIから、上記の`docker-compose.yaml`を配置したディレクトリを指定してコンテナを起動します。GUIから設定すると、自動的にコンテナがビルド・起動され、毎日午前2時にバックアップが実行されるようになります。
+
+## 動作確認
+
+手動でバックアップを実行して動作を確認します。
 
 ```bash
-#!/bin/bash
-
-# 環境変数からAWS認証情報とS3バケット名を取得
-if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$S3_BUCKET_NAME" ]; then
-  echo "Error: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and S3_BUCKET_NAME must be set."
-  exit 1
-fi
-
-SOURCE_DIR="/app/backup_data" # コンテナにマウントされたNASの共有フォルダ
-TARGET_S3_PATH="s3://${S3_BUCKET_NAME}/nas_backup" # S3上のパス
-
-echo "Starting S3 backup from ${SOURCE_DIR} to ${TARGET_S3_PATH} at $(date)"
-
-# AWS S3 Sync コマンドを実行
-# --delete をつけるとS3側にないファイルが削除されるため注意
-aws s3 sync "${SOURCE_DIR}" "${TARGET_S3_PATH}" --exclude ".*" --exclude "*/.thumbnails/*"
-
-if [ $? -eq 0 ]; then
-  echo "S3 backup completed successfully at $(date)"
-else
-  echo "Error: S3 backup failed at $(date)"
-fi
+docker exec -it rclone-scheduler sh -lc 'eval "$CRON_COMMAND"'
 ```
 
-上記の `backup.sh` スクリプトは、NASからマウントされた `/app/backup_data` ディレクトリの内容をS3バケットの `nas_backup` プレフィックス以下に同期します。`.env` ファイルやDocker Composeの `environment` セクションを通じてAWS認証情報などを渡します。
+実行すると、以下のような出力が得られます。
 
+```
+2026-01-03 20:16:11 START: rclone sync /data -> s3:your-nas-backup-bucket/home
+2026-01-03 20:16:11 INFO: log_file=/logs/rclone-sync-2026-01-03_201611.log
+2026-01-03 20:16:11 INFO: options: size-only=on delete-excluded=on progress=on stats=30s
+2026-01-03 20:16:11 INFO: excludes: dot-files, dot-dirs, #recycle, DS_Store, Thumbs.db
+Transferred:              0 B / 0 B, -, 0 B/s, ETA -
+Checks:            192069 / 192069, 100%, Listed 391389
+Deleted:                4 (files), 0 (dirs), 24.423 MiB (freed)
+Elapsed time:       1m8.4s
+```
+
+ログは `/volume1/docker/nas-backup/logs/` に保存されます。
+
+## 運用してわかったこと
+
+### 初回同期には時間がかかる
+
+初回のバックアップでは全ファイルをアップロードするため、数時間〜数十時間かかります（データ量による）。その後の差分同期は数分〜数十分で完了します。
+
+### S3のコストは想像以上にかかる
+
+DEEP_ARCHIVEのストレージコスト自体は非常に安価（$0.00099/GB/月）です[^storage-cost]。しかし、**アップロード時のPutObjectリクエスト料金がファイル数に応じてかかります**。
+
+自分の場合、写真が大量にあるためファイル数が多く、PutObjectは数に応じて料金が発生するため、想像以上にコストがかかりました。最初は差分確認のための無駄なリクエストでコストがかかっているのではと思いましたが、内訳を確認したところPutObjectでした。
+
+[^storage-cost]: DEEP_ARCHIVEは90日以内の削除に早期削除料金がかかりますが、ストレージコスト自体が全体の中ではマイナーだったため、あまり気にしていません。写真のフォルダ整理程度であれば影響はほとんどありません。
+
+![S3のコスト内訳（ほぼPutObject）](/images/s3-cost-breakdown-put-object.png)
+
+実際のコスト内訳を見ると、約1週間（2025/12/28〜2026/1/3）で以下のような費用になっています：
+
+| 項目 | コスト | 割合 |
+|------|--------|------|
+| **PutObject** | **$11.91** | **87.7%** |
+| HeadObject | $0.61 | 4.5% |
+| UploadPart | $0.31 | 2.3% |
+| 操作なし | $0.23 | 1.7% |
+| **DeepArchiveStorage** | **$0.23** | **1.7%** |
+| その他すべて | $0.39 | 2.9% |
+| **合計** | **$13.58** | **100%** |
+
+ストレージコスト（$0.23）と比べると、初回バックアップ時のPutObjectリクエストコスト（$11.91）がいかに大きいかがわかります。
+
+最初は、TB単位で月1000円かからないくらいで保管できると思っていました。しかし、いきなり1日で$5くらい出て少し焦りました。
+
+![S3の日次コスト推移](/images/s3-daily-cost-trend.png)
+
+グラフを見ると、初日（12/28）は$4.72と高く、その後も$1〜3ドル台が続きました。これは、Google Photosからの写真移行で何万ファイル単位で毎日追加していたことが主な要因です。
+
+写真移行が落ち着いてからは$0.22（1/3）程度になってきたので、平時は落ち着くだろうと考えています。通常運用でファイルを増やす範囲のものしか追加バックアップしていない状態であれば、当初想定していた月1000円以内に収まりそうです。
+
+### ログのローテーション
+
+ログファイルが増え続けるため、古いログを定期的に削除する仕組みが必要です。現時点では手動で削除していますが、将来的にはログローテーションスクリプトを追加する予定です。
+
+### rcloneのオプション選択
+
+`--size-only` オプションを使うことで、タイムスタンプの比較を省略してパフォーマンスを向上させています。
+
+これはパフォーマンスの理由だけでなく、**S3のリクエストコストを抑える目的もあります**。各ファイルを個別に確認するとHeadObjectなどのリード系リクエストでコストが増える可能性があるため[^rclone-cost]、厳密に比較させないようにしています。
+
+ただし、サイズが同じでも内容が変わる可能性があるファイル（データベースファイルなど）には注意が必要です。
+
+[^rclone-cost]: rcloneの動作とS3のリクエストの関係を厳密に検証したわけではありません。ChatGPT・Claudeで相談しながら、最小限動くところまで試行錯誤した結果です。
 
 ## まとめ
 
-本記事では、UGreen NASync DH2300 NAS StorageのデータをAmazon S3にバックアップするための構成案について解説しました。
+UGreen NASのデータをS3にバックアップする構成について、実際に運用している内容をまとめました。
 
-*   UGreen NASでのDocker環境構築（非公式な方法による）
-*   NAS共有フォルダとDockerコンテナ間のボリュームマウント
-*   Docker ComposeによるCronスケジューラの導入
-*   AWS CLIを利用したS3バックアップスクリプトとDockerイメージの作成
-*   AWS認証情報のセキュアな管理 (`.env` ファイルの利用)
-*   バックアップログの確認と永続化、および監視の重要性
+- rclone syncで差分同期
+- Docker + cronで定期実行
+- S3 DEEP_ARCHIVEでコスト最適化
+- ドットファイル・システムフォルダの除外
+- シンプルな運用で管理負荷を最小化
 
-この構成により、安価なNASでも信頼性の高いクラウドバックアップを自動化できます。特に `aws s3 sync` は差分バックアップにも対応しているため、効率的な運用が可能です。
+この構成により、安価なNASでも信頼性の高いクラウドバックアップを自動化できています。個人用途であれば月数百円程度のコストで、災害対策としてのバックアップを実現できます。
 
-ただし、本構成はUGreen NASのDocker環境が公式サポート外である点、またNASのハードウェアリソースが限られている点を考慮し、自己責任で運用してください。
+この情報が、同じようにNASのバックアップを検討している方の参考になれば幸いです。
 
-この情報が、皆さんのデータ保護の一助となれば幸いです。
-
-
-### バックアップログの管理
-
-バックアップ処理が正常に完了したか、またはエラーが発生したかを把握するためには、ログの管理が不可欠です。
-
-#### 1. `docker logs` による確認
-
-最も基本的な方法は、`docker logs` コマンドを使用してコンテナの標準出力と標準エラー出力を確認することです。
-
-```bash
-docker logs nas-s3-backup-executor
-```
-
-`backup.sh` スクリプト内で `echo` を使って出力しているメッセージが、このコマンドで確認できます。
-
-#### 2. ログの永続化
-
-Dockerのデフォルト設定では、ログはコンテナが削除されると失われます。NASの再起動時やコンテナの再作成時にもログを参照できるようにするためには、ログを永続化する必要があります。
-
-##### Dockerのログドライバを利用
-
-`docker-compose.yml` のサービス定義に `logging` セクションを追加することで、ログドライバを設定できます。
-
-```yaml
-services:
-  backup-executor:
-    # ...
-    logging:
-      driver: "local" # ホストのローカルファイルシステムにログを保存
-      options:
-        max-size: "10m" # ログファイルの最大サイズ
-        max-file: "3"   # 保持するログファイルの数
-```
-
-`local` ドライバを使用すると、ログはホストの `/var/lib/docker/containers/<container-id>/<container-id>-json.log` に保存されます。NASであれば、このパスを共有フォルダなどにマウントして管理することも検討できます。
-
-##### その他のログ管理
-
-より高度なログ管理が必要な場合は、`fluentd` や `syslog` などのログドライバを利用し、中央集中のログ管理システム（例: ELK Stack, Datadog）にログを転送することも可能です。個人利用のNASではそこまで必要ないかもしれませんが、オプションとして覚えておくと良いでしょう。
-
-#### 3. ログ監視と通知
-
-バックアップの成否を定期的に確認することは非常に重要です。ログの内容を監視し、エラーが発生した場合にはメールやSlackなどで通知する仕組みを導入することで、バックアップが失敗した際に迅速に対応できます。
-
-シンプルな方法としては、`cron` ジョブに加えて、`backup.sh` の実行結果に応じて通知を送るスクリプトを追加することが考えられます。
