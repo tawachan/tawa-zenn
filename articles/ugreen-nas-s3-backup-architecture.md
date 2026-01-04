@@ -8,9 +8,8 @@ topics:
   - "backup"
   - "docker"
   - "rclone"
-published: false
-published_at: "2026-01-04 10:00"
-# publication_name: "pivotmedia" # 個人記事のためコメントアウト
+published: true
+published_at: "2026-01-04 23:00"
 ---
 
 もう仕事始めが近くて、年末年始の9連休が終わるなんて信じられない [@tawachan](https://x.com/tawachan39) です。
@@ -28,8 +27,6 @@ NASだけだと災害や故障に対して不安があるため、クラウド�
 そのため、クラウドストレージへのバックアップが必須と考えました。S3を選んだのは、Google Cloud StorageやAzure Blob Storageと比べてコストが安そう[^cloud-comparison]なのと、AWSの方がメジャーでトラブルシュート情報が見つかりやすいという理由からです。
 
 [^nas-model]: [UGreen NASync DH2300 NAS Storage 製品ページ](https://nas.ugreen.jp/products/ugreen-nasync-dh2300-nas-storage)
-
-[^docker-limitation]: ただし、UGreen NASのDockerはDocker Hubからしかリモートイメージを取得できないようです。GitHub Container RegistryやAmazon ECRなどは使えないため、使えるイメージが限られます。結局、ローカルにDockerfileを作って自分でビルドし、ローカルイメージを使っていく方が安牌そうだという所感を得ました。
 
 [^hdd-config]: 2台でRAID1を組んで冗長構成にすることも考えましたが、HDD追加費用がそこそこかかることと、根本的なバックアップにはならないため、まずは1台から始めました。使う容量に対して8TBで十分であれば将来的に冗長性のために追加、足りなければ拡張のために買い足すかもしれません。
 
@@ -61,7 +58,7 @@ NASだけだと災害や故障に対して不安があるため、クラウド�
 
 ### 不要なファイルを適切に除外
 
-ドットファイル（`.DS_Store`など）やNAS特有のシステムフォルダ（`#recycle`など）は、バックアップしても意味がありません。
+ドットファイル（`.DS_Store`など）やNAS特有のシステムフォルダ（`#recycle`（ゴミ箱）など）は、バックアップしても意味がありません。
 
 ### NASの運用をバックアップのために変えない
 
@@ -83,9 +80,13 @@ UGreen NAS DH2300は廉価版で、メモリも4GBと少なめです。調べて
 
 ![UGreen公式サイトのDockerダウンロードページ](/images/ugreen-nas-docker-download.png)
 
+Dockerが使えるようになったことで、バックアップの自動化が実現できました[^docker-limitation]。
+
 [^docker-support]: [Reddit: DH2300 does not support Docker but...](https://www.reddit.com/r/UgreenNASync/comments/1of9lny/dh2300_does_not_support_docker_but/) など、標準のAppストアではDockerが選択できないという情報がありました。
 
 [^docker-install]: [実際にインストールできたときのツイート](https://x.com/tawachan39/status/2003465060535169464)。公式サポート外のため、自己責任での運用となります。
+
+[^docker-limitation]: ただし、UGreen NASのDockerはDocker Hubからしかリモートイメージを取得できないようです。GitHub Container RegistryやAmazon ECRなどは使えないため、使えるイメージが限られます。結局、ローカルにDockerfileを作って自分でビルドし、ローカルイメージを使っていく方が安牌そうだという所感を得ました。
 
 ### 全体構成図
 
@@ -332,11 +333,13 @@ Elapsed time:       1m8.4s
 
 ### S3のコストは想像以上にかかる
 
-DEEP_ARCHIVEのストレージコスト自体は非常に安価（$0.00099/GB/月）です[^storage-cost]。しかし、**アップロード時のPutObjectリクエスト料金がファイル数に応じてかかります**。
+DEEP_ARCHIVEのストレージコスト自体は非常に安価（$0.00099/GB/月）です[^storage-cost]。しかし、**アップロード時のPutObjectリクエスト料金がファイル数に応じてかかります**[^put-pricing]。
 
 自分の場合、写真が大量にあるためファイル数が多く、PutObjectは数に応じて料金が発生するため、想像以上にコストがかかりました。最初は差分確認のための無駄なリクエストでコストがかかっているのではと思いましたが、内訳を確認したところPutObjectでした。
 
 [^storage-cost]: DEEP_ARCHIVEは90日以内の削除に早期削除料金がかかりますが、ストレージコスト自体が全体の中ではマイナーだったため、あまり気にしていません。写真のフォルダ整理程度であれば影響はほとんどありません。
+
+[^put-pricing]: S3のPUT、COPY、POST、LISTリクエストは、ストレージクラスによって異なる料金が設定されています。詳細は [AWS S3 料金ページ](https://aws.amazon.com/s3/pricing/) を参照。DEEP_ARCHIVEの場合、1,000リクエストあたり最大$0.05程度かかります。
 
 ![S3のコスト内訳（ほぼPutObject）](/images/s3-cost-breakdown-put-object.png)
 
