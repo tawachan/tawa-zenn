@@ -151,7 +151,7 @@ region = us-east-1
 storage_class = DEEP_ARCHIVE
 ```
 
-`env_auth = true` により、環境変数からAWS認証情報を取得します。これにより、設定ファイルに認証情報を書かずに済みます。
+`env_auth = true` により、環境変数からAWS認証情報を取得します。
 
 リージョンは `us-east-1`（バージニア）を選択しています。東京リージョンと比べてコストが安いためです[^region-cost]。
 
